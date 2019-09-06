@@ -24,17 +24,46 @@ router.post('/', validateProject, (req, res) => {
         });
 });
 
+//get operation should fetch the project with the req id, only if it exists
 router.get('/:id', (req, res) => {
+    const id = req.params.id;
+    const { name, description } = req.body;
+    Project.get(id)
+        .then(project => {
+            if (project) {
+                res.status(200).json(project);
+            } else {
+                res.status(404).json({ error: "A project with that id does not exist." })
+            }
+        })
+        .catch(error => {
+            console.log(error);
+            res.status(500).json({ error: "There was an error retrieving the post from the database." })
+        });     
+});
 
-})
 
 router.put('/:id', (req, res) => {
 
 })
 
+//delete operation should delete the project at that id, only if it exists
 router.delete('/:id', (req, res) => {
-
-})
+    const id = req.params.id;
+    Project.remove(id)
+        .then(removed => {
+            //console.log(removed);
+            if (removed) {
+                res.status(200).json(id);
+            } else {
+                res.status(404).json({ error: "A project with that id does not exist." })
+            }
+        })
+        .catch(error => {
+            console.log(error);
+            res.status(500).json({ error: "There was an error deleting the post from the database." })
+        });
+});
 
 //custom middleware
 function validateProject(req, res, next) {
