@@ -1,5 +1,6 @@
 const express = require('express');
 const Project = require('../data/helpers/projectModel.js');
+
 const router = express.Router();
 
 //get operation should return an array of all projects
@@ -38,7 +39,7 @@ router.get('/:id', (req, res) => {
         })
         .catch(error => {
             console.log(error);
-            res.status(500).json({ error: "There was an error retrieving the post from the database." })
+            res.status(500).json({ error: "There was an error retrieving the project from the database." })
         });     
 });
 
@@ -49,7 +50,7 @@ router.put('/:id', (req, res) => {
     const description = req.body.description;
     //**how to use destructuring to require either a name or a description in the request body??**
     if (!name && !description) {
-        return res.status(400).json({ errorMessage: "Please provide a name and description for the post." });
+        return res.status(400).json({ errorMessage: "Please provide a name and description for the project." });
     }
     Project.update(id, { name, description })
         .then(updated => {
@@ -91,11 +92,35 @@ router.delete('/:id', (req, res) => {
         })
         .catch(error => {
             console.log(error);
-            res.status(500).json({ error: "There was an error deleting the post from the database." })
+            res.status(500).json({ error: "There was an error deleting the projectt from the database." })
         });
 });
 
-//custom middleware
+//get actions retrieves list of actions for a specific project
+router.get('/:project_id/actions', (req, res) => {
+    const { project_id } = req.params;
+    Project.get(project_id)
+        .then(project => {
+            if (project) {
+               Project.getProjectActions(project_id)
+                .then(actions => res.status(200).json(actions)) 
+            } else {
+                res.status(404).json({ error: "A project with that id does not exist." })
+            }
+        })
+        .catch (error => {
+            console.log(error);
+            res.status(500).json({ error: "There was an error while retrieving the actions information." });
+        });
+});
+
+//post action adds action to specific project based on id. if there is no valid project w/that id it should return an error
+
+//put action should update action at specified id, only if it exists
+
+//delete action should remove action at specified id only if it exists
+
+//custom middleware below:
 function validateProject(req, res, next) {
     const id = req.params.id;
     const { name, description } = req.body;
