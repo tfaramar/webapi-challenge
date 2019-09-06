@@ -92,7 +92,7 @@ router.delete('/:id', (req, res) => {
         })
         .catch(error => {
             console.log(error);
-            res.status(500).json({ error: "There was an error deleting the projectt from the database." })
+            res.status(500).json({ error: "There was an error deleting the project from the database." })
         });
 });
 
@@ -155,6 +155,29 @@ router.get('/:project_id/actions/:id', (req, res) => {
 //put action should update action at specified id, only if it exists
 
 //delete action should remove action at specified id only if it exists
+router.delete('/:project_id/actions/:id', (req, res) => {
+    const project_id = req.params.project_id;
+    const id = req.params.id;
+    Project.get(project_id)
+        .then(project => {
+            if (project) {
+            Action.remove(id)
+                .then(removed => {
+                    if (removed) {
+                        res.status(200).json(id);
+                    } else {
+                        res.status(404).json({ error: "An action with that id does not exist." })
+                    }
+                })
+            } else {
+                res.status(404).json({ error: "A project with that id does not exist." })
+            }
+        })
+        .catch(error => {
+            console.log(error);
+            res.status(500).json({ error: "There was an error deleting the action from the database." })
+        });
+});
 
 //custom middleware below:
 function validateProject(req, res, next) {
