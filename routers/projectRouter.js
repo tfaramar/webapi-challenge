@@ -42,10 +42,40 @@ router.get('/:id', (req, res) => {
         });     
 });
 
-
+//put operation should update the project specified by the id and return it, only if the project at that id exists
 router.put('/:id', (req, res) => {
-
-})
+    const id = req.params.id;
+    const name = req.body.name;
+    const description = req.body.description;
+    //**how to use destructuring to require either a name or a description in the request body??**
+    if (!name && !description) {
+        return res.status(400).json({ errorMessage: "Please provide a name and description for the post." });
+    }
+    Project.update(id, { name, description })
+        .then(updated => {
+            if (updated) {
+                Project.get(id)
+                    .then(project => {
+                        //console.log(project);
+                        if (project) {
+                            res.status(200).json(project);
+                        } else {
+                            res.status(404).json({ message: "A project with that id does not exist." });
+                        }
+                    })
+                    .catch(error => {
+                        console.log(error);
+                        res.status(500).json({ error: "There was an error retrieving the project from the database." });
+                    })
+            } else {
+                res.status(404).json({ message: "A project with that id does not exist." });
+            }
+        })
+        .catch(error => {
+            console.log(error);
+            res.status(500).json({ error: "There was an error while updating the project to the database." });
+        });
+});
 
 //delete operation should delete the project at that id, only if it exists
 router.delete('/:id', (req, res) => {
