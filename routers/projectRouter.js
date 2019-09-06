@@ -1,5 +1,6 @@
 const express = require('express');
 const Project = require('../data/helpers/projectModel.js');
+const Action = require('../data/helpers/actionModel.js');
 
 const router = express.Router();
 
@@ -28,7 +29,6 @@ router.post('/', validateProject, (req, res) => {
 //get operation should fetch the project with the req id, only if it exists
 router.get('/:id', (req, res) => {
     const id = req.params.id;
-    const { name, description } = req.body;
     Project.get(id)
         .then(project => {
             if (project) {
@@ -115,6 +115,42 @@ router.get('/:project_id/actions', (req, res) => {
 });
 
 //post action adds action to specific project based on id. if there is no valid project w/that id it should return an error
+router.post('/:project_id/actions', validateAction, (req, res) => {
+    const action = req.body;
+    Action.insert(action)
+        .then(action => {
+            res.status(201).json(action);
+        })
+        .catch(error => {
+            console.log(error);
+            res.status(500).json({ error: "There was an error while adding the action." });
+        });
+});
+
+//get action should retrieve an action with the specified id, and belonging to the specified project
+router.get('/:project_id/actions/:id', (req, res) => {
+    const project_id = req.params.project_id;
+    const id = req.params.id;
+    Project.get(project_id)
+        .then(project => {
+            if (project) {
+            Action.get(id)
+                .then(action => {
+                    if (action) {
+                        res.status(200).json(action);
+                    } else {
+                        res.status(404).json({ error: "An action with that id does not exist." })
+                    }
+                })
+            } else {
+                res.status(404).json({ error: "A project with that id does not exist." })
+            }
+        })
+        .catch(error => {
+            console.log(error);
+            res.status(500).json({ error: "There was an error while retrieving the action." });
+        });
+});
 
 //put action should update action at specified id, only if it exists
 
@@ -137,6 +173,26 @@ function validateProject(req, res, next) {
     if (typeof description !== 'string') {
         return res.status(400).json({ error: "Description must be provided as a string." })
     }
+    next();
+};
+
+function validateAction(req, res, next) {
+    const {project_id} = req.params;
+    const { description, notes } = req.body;
+
+    if (!description) {
+        return res.status(400).json({ error: "An action description is required." })
+    }
+    if (!notes) {
+        return res.status(400).json({ error: "Action notes are required." })
+    }
+    if (typeof description !== 'string') {
+        return res.status(400).json({ error: "Action description must be provided as a string." })
+    }
+    if (typeof notes !== 'string') {
+        return res.status(400).json({ error: "Action notes must be provided as a string." })
+    }
+    req.body = {project_id, description, notes};
     next();
 };
 
