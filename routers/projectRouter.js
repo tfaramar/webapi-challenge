@@ -48,11 +48,17 @@ router.put('/:id', (req, res) => {
     const id = req.params.id;
     const name = req.body.name;
     const description = req.body.description;
-    //**how to use destructuring to require either a name or a description in the request body??**
+    const completed = req.body.completed;
     if (!name && !description) {
         return res.status(400).json({ errorMessage: "Please provide a name and description for the project." });
     }
-    Project.update(id, { name, description })
+    if (name && (typeof name !== 'string')) {
+        return res.status(400).json({ error: "Name must be provided as a string." })
+    }
+    if (description && (typeof description !== 'string')) {
+        return res.status(400).json({ error: "Description must be provided as a string." })
+    }
+    Project.update(id, { name, description, completed })
         .then(updated => {
             if (updated) {
                 Project.get(id)
@@ -153,6 +159,42 @@ router.get('/:project_id/actions/:id', (req, res) => {
 });
 
 //put action should update action at specified id, only if it exists
+router.put('/:project_id/actions/:id', (req, res) => {
+    const project_id = req.params.project_id;
+    const id = req.params.id;
+    const { description, notes, completed } = req.body;
+    if (!notes && !description) {
+        return res.status(400).json({ errorMessage: "Please provide a description and notes for the project." });
+    }
+    if (notes && (typeof notes !== 'string')) {
+        return res.status(400).json({ error: "Notes must be provided as a string." })
+    }
+    if (description && (typeof description !== 'string')) {
+        return res.status(400).json({ error: "Description must be provided as a string." })
+    }
+    if (description && (description.length >= 128)) {
+        return res.status(400).json({ error: "Description must be less than 128 characters long." })
+    }
+    Project.get(project_id)
+        .then(project => {
+            if (project) {
+            Action.update(id, { description, notes, completed })
+                .then(action => {
+                    if (action) {
+                        res.status(200).json(action);
+                    } else {
+                        res.status(404).json({ error: "An action with that id does not exist." })
+                    }
+                })
+            } else {
+                res.status(404).json({ error: "A project with that id does not exist." });
+            }
+        })
+        .catch(error => {
+            console.log(error);
+            res.status(500).json({ error: "There was an error while retrieving the action." });
+        });
+});
 
 //delete action should remove action at specified id only if it exists
 router.delete('/:project_id/actions/:id', (req, res) => {
@@ -189,6 +231,9 @@ function validateProject(req, res, next) {
     }
     if (!description) {
         return res.status(400).json({ error: "A description is required." })
+    }
+    if (description.length >= 128) {
+        return res.status(400).json({ error: "Description must be less than 128 characters long." })
     }
     if (typeof name !== 'string') {
         return res.status(400).json({ error: "Name must be provided as a string." })
