@@ -26,13 +26,24 @@ Demonstrate your understanding of this Sprint's concepts by answering the follow
 
 - [ ] Mention two parts of Express that you learned about this week.
 
+1. Routing: routing helps us map incoming requests to the appropriate request handler based on the URL and the HTTP method used.
+2. Convenience helpers: these are extension methods that can be added to the request and response objects to make writing our applications and API servers easier. 
+
 - [ ] Describe Middleware?
+
+Middleware are functions that extend software. In the context of the client-server architecture, middleware can not only monitor requests and do something with the information from the request, it can also stop the request, produce responses, or do nothing. It serves a similar role with respect to responses. There are three types of middleware: built-in, third party, and custom. Middleware can be used globally in our server, or locally at a request handler. 
 
 - [ ] Describe a Resource?
 
+Resource is a term used to represent primary data in the context of an API. It can be a collection (for example, “users” or “posts”) or a single resource (for example, “user” or “post”) that are available on the server.
+
 - [ ] What can the API return to help clients know if a request was successful?
 
+HTTP response status codes tell us whether or not a specific HTTP request was successfully completed (and if not, why not). We write these in our request handlers as responses to inform the client of the result of their request. Returning appropriate HTTP status codes is essential to a well-designed and useful API.
+
 - [ ] How can we partition our application into sub-applications?
+
+Express provides us with routers for application modularity. Express routers offer a way to break our app into multiple sub-apps, making it easier to maintain. Each router can have its own middleware and routing.
 
 ## Project Setup
 
